@@ -33,7 +33,19 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu">
     <link rel="stylesheet" href="{% static 'locator/styles.min.css' %}">
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css">
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    
+    <script src="{% static 'locator/Leaflet.Spin-1.1.2/example/spin/dist/spin.min.js' %}"></script>
+    <script src="{% static 'locator/Leaflet.Spin-1.1.2/leaflet.spin.js' %}"></script>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.72.2/dist/L.Control.Locate.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol@0.72.2/dist/L.Control.Locate.min.js" charset="utf-8"></script>
+    
+    <link rel="stylesheet" href="{% static 'locator/leaflet-search-master/src/leaflet-search.css' %}" />
+    <script src="{% static 'locator/leaflet-search-master/src/leaflet-search.js' %}"></script>
     <style>
 
 
@@ -74,28 +86,54 @@
     {% leaflet_map "mymap" %}
 
 
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.0/js/bootstrap.bundle.min.js"></script>
     <script src="{% static 'locator/script.min.js' %}"></script>
-
+    
     <script>
-        var mydataurl = 'http://localhost:8000/api/healthfacilities/?county=Nairobi&format=json';
         
+        //let mydataurl2 = 'http://localhost:8000/api/healthfacilities/?county=Lamu&format=json';
+        let mydataurl = 'http://localhost:8000/api/healthfacilities/?format=json';
         window.addEventListener("map:init",  function (event, dataurl =mydataurl) {
-        var map = event.detail.map;
+        let map = event.detail.map;
+        L.control.locate({locateOptions: {enableHighAccuracy: true}}).addTo(map);
         // Download GeoJSON data with Ajax
-            
+        console.log("Loading...")
+        
+        map.spin(true);
+              
         fetch(dataurl)
           .then(function(resp) {
+    
             return resp.json();
+            
           }).then(function(data) {
-            L.geoJson(data, {
-              onEachFeature: function onEachFeature(feature, layer) {
-                var props = feature.properties;
-                var content = `<h6>${props.facility_name}</h6><ul><p><li><b>${props.facility_type}</b></li></p><p><li>${props.ownership}</li></p><p><li>${props.ward}</li></p></ul>`;
-                layer.bindPopup(content);
-            }}).addTo(map);
-          });
+              map.spin(false);
+              let clusters = L.markerClusterGroup();
+              map.addLayer(clusters);
+              
+              
+        
+              for (let i = 0; i < Object.keys(data['features']).length; i++) {
+                 
+            
+    
+                  let detail = data['features'][i]['properties'];
+                  let content = `<h6><b>${detail.facility_name}</b></h6><p><b>Type: </b>${detail.facility_type}</p><p><b>Ownership: </b>${detail.ownership}</p><p><b>Ward: </b>${detail.ward}</p>`;
+
+                  let coords = data['features'][i]['geometry']['coordinates'][0];
+        
+                  let marker = L.marker(new L.LatLng(coords[1], coords[0]));
+                  marker.bindPopup(content);
+                  clusters.addLayer(marker);
+                  
+                  
+                
+                };
+                     
+              
+              });
 
         
       });

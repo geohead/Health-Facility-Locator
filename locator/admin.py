@@ -1,7 +1,7 @@
 from django.contrib.gis import admin
 from leaflet.admin import LeafletGeoAdmin
 
-from .models import HealthFacilities, County
+from .models import HealthFacilities
 
 # Register your models here.
 # class HealthFacilitiesAdmin (admin.OSMGeoAdmin):
@@ -36,7 +36,7 @@ class HealthFacilitiesAdmin (LeafletGeoAdmin):
     
     
 admin.site.register(HealthFacilities,HealthFacilitiesAdmin)
-admin.site.register(County, admin.OSMGeoAdmin)
+#admin.site.register(County, admin.OSMGeoAdmin)
 
 admin.site.site_header = "Health Facility Locator Admin"
 admin.site.site_title = "HF Locator"
